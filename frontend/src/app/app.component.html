@@ -1,0 +1,130 @@
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">◆</span>
+    <h1>{{ title }}</h1>
+  </div>
+  <div class="health">
+    @if (health(); as h) {
+      <span class="pill" [class.ok]="h.llm_configured">LLM {{ h.llm_configured ? 'on' : 'off' }}</span>
+      <span class="pill" [class.ok]="h.snowflake_configured">Snowflake {{ h.snowflake_configured ? 'on' : 'off' }}</span>
+    } @else {
+      <span class="pill bad">Backend offline</span>
+    }
+  </div>
+</header>
+
+<main class="layout">
+  <!-- Chat -->
+  <section class="panel chat">
+    <div class="modes" role="tablist">
+      @for (m of modes; track m.label) {
+        <button type="button" role="tab" [class.active]="mode() === m.value" (click)="mode.set(m.value)">
+          {{ m.label }}
+        </button>
+      }
+    </div>
+
+    <div class="messages">
+      @if (turns().length === 0) {
+        <div class="empty">
+          <p>Ask about SQL, dbt models, data quality, docs, or a failed Airflow task.</p>
+          @for (ex of examples; track ex) {
+            <button type="button" class="chip" (click)="send(ex)">{{ ex }}</button>
+          }
+        </div>
+      }
+      @for (t of turns(); track $index) {
+        <div class="msg" [class.user]="t.role === 'user'">
+          @if (t.response) {
+            <div class="meta">
+              <span class="tag">{{ t.response.agent }}</span>
+              <span class="status" [attr.data-s]="t.response.status">{{ t.response.status }}</span>
+            </div>
+          }
+          <p class="text">{{ t.text }}</p>
+
+          @if (t.response?.sources?.length) {
+            <div class="sources">
+              Sources:
+              @for (s of t.response!.sources!; track $index) {
+                <span class="src">{{ s.source }} › {{ s.section }}</span>
+              }
+            </div>
+          }
+
+          @if (t.response?.incident; as inc) {
+            <div class="incident">
+              <div><b>DAG</b> {{ inc.dag_id }} · <b>Task</b> {{ inc.task_id }}</div>
+              <div><b>Cause</b> {{ inc.likely_cause ?? 'unknown' }} <em>({{ inc.cause_status }})</em></div>
+              <pre>{{ inc.evidence.join('\n') }}</pre>
+              <small>Retry / clear task requires human approval — not available from the Copilot.</small>
+            </div>
+          }
+
+          @if (t.response?.checks?.length) {
+            <div class="checks">
+              @for (c of t.response!.checks!; track c.check) {
+                <button type="button" class="chip" (click)="onSqlEdit(c.sql)">Load “{{ c.check }}” SQL</button>
+              }
+            </div>
+          }
+        </div>
+      }
+      @if (loading()) { <div class="msg"><p class="text muted">Thinking…</p></div> }
+    </div>
+
+    @if (mode() === 'pipeline') {
+      <div class="log">
+        <div class="row">
+          <label for="log">Airflow task log</label>
+          <button type="button" class="link" (click)="loadSampleLog()">Load sample log</button>
+        </div>
+        <textarea id="log" rows="4" [(ngModel)]="log" placeholder="Paste the failing task log here"></textarea>
+      </div>
+    }
+
+    <form class="composer" (ngSubmit)="send()">
+      <input name="message" [(ngModel)]="message" placeholder="Ask the Copilot…" autocomplete="off" />
+      <button type="submit" [disabled]="loading() || !message.trim()">Send</button>
+    </form>
+  </section>
+
+  <!-- SQL workbench -->
+  <section class="panel workbench">
+    <div class="row">
+      <h2>SQL preview</h2>
+      @if (sqlStatus(); as s) { <span class="status" [attr.data-s]="s">{{ s }}</span> }
+    </div>
+    <textarea class="sql" rows="10" spellcheck="false" [ngModel]="sql()" (ngModelChange)="onSqlEdit($event)"
+              placeholder="Generated SQL appears here. You can edit it, validate it, then run it."></textarea>
+
+    @if (latest()?.assumptions) {
+      <p class="muted"><b>Assumptions:</b> {{ latest()!.assumptions }}</p>
+    }
+    @for (e of sqlErrors(); track $index) { <p class="error">{{ e }}</p> }
+
+    <div class="actions">
+      <button type="button" (click)="validate()" [disabled]="!sql()">Validate</button>
+      <button type="button" class="primary" (click)="run()"
+              [disabled]="sqlStatus() !== 'approved' || !health()?.snowflake_configured"
+              [title]="health()?.snowflake_configured ? 'Run read-only query' : 'Configure Snowflake to enable Run'">
+        Run
+      </button>
+    </div>
+    <p class="muted small">Only validated, read-only SELECT statements can run. Destructive SQL is blocked on the server.</p>
+
+    @if (result(); as r) {
+      <div class="table-wrap">
+        <table>
+          <thead><tr>@for (c of r.columns; track c) { <th>{{ c }}</th> }</tr></thead>
+          <tbody>
+            @for (row of r.rows; track $index) {
+              <tr>@for (c of r.columns; track c) { <td>{{ cell(row, c) }}</td> }</tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <p class="muted small">{{ r.rows.length }} rows</p>
+    }
+  </section>
+</main>

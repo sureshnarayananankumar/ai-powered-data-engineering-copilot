@@ -1,0 +1,72 @@
+:host { display: flex; flex-direction: column; height: 100vh; }
+
+.topbar {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  padding: 12px 20px; border-bottom: 1px solid var(--line); background: var(--surface);
+  h1 { font-size: 1.05rem; margin: 0; font-weight: 600; }
+}
+.brand { display: flex; align-items: center; gap: 10px; }
+.logo { color: var(--accent); font-size: 1.2rem; }
+.health { display: flex; gap: 6px; flex-wrap: wrap; }
+.pill {
+  font-size: .75rem; padding: 3px 10px; border-radius: 999px; background: var(--muted-bg); color: var(--muted);
+  &.ok { background: var(--ok-bg); color: var(--ok); }
+  &.bad { background: var(--bad-bg); color: var(--bad); }
+}
+
+.layout {
+  flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 16px; padding: 16px;
+  @media (max-width: 900px) { grid-template-columns: 1fr; overflow: auto; }
+}
+.panel {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px;
+  display: flex; flex-direction: column; gap: 12px; min-height: 0;
+}
+h2 { font-size: .95rem; margin: 0; }
+.row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+
+.modes { display: flex; gap: 4px; flex-wrap: wrap;
+  button { border: 1px solid var(--line); background: transparent; padding: 5px 12px; border-radius: 8px; cursor: pointer; color: inherit;
+    &.active { background: var(--accent); border-color: var(--accent); color: #fff; } }
+}
+.messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; min-height: 200px; }
+.empty { color: var(--muted); display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.msg {
+  background: var(--muted-bg); padding: 10px 12px; border-radius: 10px; max-width: 92%;
+  &.user { align-self: flex-end; background: var(--accent-bg); }
+  .text { margin: 0; white-space: pre-wrap; line-height: 1.45; }
+}
+.meta { display: flex; gap: 6px; margin-bottom: 4px; }
+.tag { font-size: .7rem; text-transform: uppercase; letter-spacing: .04em; color: var(--accent); font-weight: 600; }
+.status {
+  font-size: .7rem; padding: 1px 8px; border-radius: 999px; background: var(--muted-bg); color: var(--muted);
+  &[data-s='approved'], &[data-s='succeeded'] { background: var(--ok-bg); color: var(--ok); }
+  &[data-s='failed'] { background: var(--bad-bg); color: var(--bad); }
+  &[data-s='running'] { background: var(--accent-bg); color: var(--accent); }
+}
+.sources { margin-top: 6px; font-size: .78rem; color: var(--muted); display: flex; gap: 6px; flex-wrap: wrap; }
+.src { background: var(--surface); border: 1px solid var(--line); padding: 1px 8px; border-radius: 6px; }
+.incident { margin-top: 8px; font-size: .85rem; display: flex; flex-direction: column; gap: 4px;
+  pre { background: var(--code-bg); padding: 8px; border-radius: 6px; white-space: pre-wrap; word-break: break-word; font-size: .75rem; margin: 0; } }
+.checks { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+.chip { border: 1px solid var(--line); background: var(--surface); color: inherit; padding: 4px 10px; border-radius: 999px; cursor: pointer; font-size: .82rem; }
+
+.log textarea, .sql { width: 100%; box-sizing: border-box; font-family: var(--mono); font-size: .8rem; }
+.composer { display: flex; gap: 8px;
+  input { flex: 1; } }
+input, textarea { border: 1px solid var(--line); border-radius: 8px; padding: 9px 10px; background: var(--bg); color: inherit; font: inherit; }
+button { font: inherit; }
+.composer button, .actions button {
+  border: 1px solid var(--line); background: var(--surface); color: inherit; padding: 8px 16px; border-radius: 8px; cursor: pointer;
+  &.primary, &[type='submit'] { background: var(--accent); border-color: var(--accent); color: #fff; }
+  &:disabled { opacity: .45; cursor: not-allowed; }
+}
+.link { background: none; border: 0; color: var(--accent); cursor: pointer; padding: 0; }
+.actions { display: flex; gap: 8px; }
+.muted { color: var(--muted); margin: 0; }
+.small { font-size: .78rem; }
+.error { color: var(--bad); margin: 0; font-size: .85rem; }
+.table-wrap { overflow: auto; border: 1px solid var(--line); border-radius: 8px; max-height: 320px; }
+table { border-collapse: collapse; width: 100%; font-size: .8rem;
+  th, td { padding: 6px 10px; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap; }
+  th { position: sticky; top: 0; background: var(--surface); } }

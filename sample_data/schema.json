@@ -1,0 +1,14 @@
+{
+  "ANALYTICS.FCT_ORDERS": {
+    "description": "One row per order. Synthetic sample data.",
+    "columns": {"ORDER_ID": "NUMBER", "CUSTOMER_ID": "NUMBER", "ORDER_DATE": "DATE", "STATUS": "VARCHAR", "AMOUNT": "NUMBER(12,2)"}
+  },
+  "ANALYTICS.DIM_CUSTOMERS": {
+    "description": "One row per customer.",
+    "columns": {"CUSTOMER_ID": "NUMBER", "CUSTOMER_NAME": "VARCHAR", "COUNTRY": "VARCHAR", "CREATED_AT": "TIMESTAMP_NTZ"}
+  },
+  "STAGING.STG_PAYMENTS": {
+    "description": "Raw payments cleaned and renamed.",
+    "columns": {"PAYMENT_ID": "NUMBER", "ORDER_ID": "NUMBER", "PAYMENT_METHOD": "VARCHAR", "AMOUNT": "NUMBER(12,2)"}
+  }
+}

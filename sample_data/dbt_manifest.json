@@ -1,0 +1,22 @@
+{
+  "nodes": {
+    "model.shop.stg_payments": {"unique_id": "model.shop.stg_payments", "name": "stg_payments", "resource_type": "model",
+      "description": "Cleans raw payments and converts cents to dollars.", "config": {"materialized": "view"},
+      "depends_on": {"nodes": ["source.shop.raw.payments"]}},
+    "model.shop.dim_customers": {"unique_id": "model.shop.dim_customers", "name": "dim_customers", "resource_type": "model",
+      "description": "Customer dimension with first/last order dates.", "config": {"materialized": "table"},
+      "depends_on": {"nodes": ["source.shop.raw.customers", "model.shop.fct_orders"]}},
+    "model.shop.fct_orders": {"unique_id": "model.shop.fct_orders", "name": "fct_orders", "resource_type": "model",
+      "description": "Order fact table joining orders with payment totals.", "config": {"materialized": "incremental"},
+      "depends_on": {"nodes": ["source.shop.raw.orders", "model.shop.stg_payments"]}},
+    "test.shop.unique_fct_orders_order_id": {"unique_id": "test.shop.unique_fct_orders_order_id", "name": "unique_fct_orders_order_id",
+      "resource_type": "test", "config": {}, "depends_on": {"nodes": ["model.shop.fct_orders"]}},
+    "test.shop.not_null_fct_orders_customer_id": {"unique_id": "test.shop.not_null_fct_orders_customer_id", "name": "not_null_fct_orders_customer_id",
+      "resource_type": "test", "config": {}, "depends_on": {"nodes": ["model.shop.fct_orders"]}}
+  },
+  "sources": {
+    "source.shop.raw.orders": {"name": "raw.orders"},
+    "source.shop.raw.payments": {"name": "raw.payments"},
+    "source.shop.raw.customers": {"name": "raw.customers"}
+  }
+}
