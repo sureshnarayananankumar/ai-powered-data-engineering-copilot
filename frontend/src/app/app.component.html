@@ -1,84 +1,126 @@
-<header class="topbar">
-  <div class="brand">
-    <span class="logo">◆</span>
-    <h1>{{ title }}</h1>
+<div class="aurora" aria-hidden="true"><span></span><span></span><span></span></div>
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+  <div class="hero-top">
+    <div class="brand">
+      <span class="logo" aria-hidden="true"><i></i></span>
+      <div>
+        <h1>{{ title }}</h1>
+        <p class="tagline">Agentic GenAI for data engineers — <b>SQL</b>, <b>dbt</b>, <b>data quality</b>, <b>docs</b> &amp; <b>Airflow</b>, with guardrails.</p>
+      </div>
+    </div>
+    <div class="status-bar">
+      @if (health(); as h) {
+        @if (h.demo) { <span class="pill demo" title="Runs in your browser on synthetic sample data"><i class="dot"></i>Live demo</span> }
+        <span class="pill" [class.ok]="h.llm_configured"><i class="dot"></i>LLM {{ h.llm_configured ? 'on' : 'off' }}</span>
+        <span class="pill" [class.ok]="h.snowflake_configured"><i class="dot"></i>{{ h.demo ? 'Sample data' : 'Snowflake ' + (h.snowflake_configured ? 'on' : 'off') }}</span>
+      } @else {
+        <span class="pill bad"><i class="dot"></i>Backend offline</span>
+      }
+      <button type="button" class="icon-btn" (click)="toggleTheme()" [attr.aria-label]="'Switch to ' + (theme() === 'dark' ? 'light' : 'dark') + ' theme'">
+        {{ theme() === 'dark' ? '☀' : '☾' }}
+      </button>
+      <a class="icon-btn gh" href="https://github.com/sureshnarayananankumar/ai-powered-data-engineering-copilot" target="_blank" rel="noopener" aria-label="View source on GitHub">
+        <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      </a>
+    </div>
   </div>
-  <div class="health">
-    @if (health(); as h) {
-      @if (h.demo) { <span class="pill demo" title="Runs in your browser on synthetic sample data">Demo mode</span> }
-      <span class="pill" [class.ok]="h.llm_configured">LLM {{ h.llm_configured ? 'on' : 'off' }}</span>
-      <span class="pill" [class.ok]="h.snowflake_configured">{{ h.demo ? 'Sample data' : 'Snowflake ' + (h.snowflake_configured ? 'on' : 'off') }}</span>
-    } @else {
-      <span class="pill bad">Backend offline</span>
+  <div class="stats">
+    @for (s of stats; track s.label) {
+      <div class="stat"><b>{{ s.value }}</b><span>{{ s.label }}</span></div>
+    }
+    @if (health()?.demo) {
+      <p class="demo-note">Runs fully in your browser on synthetic sample data — no LLM or Snowflake needed. Press <kbd>/</kbd> to ask.</p>
     }
   </div>
 </header>
 
-@if (health()?.demo) {
-  <div class="banner">
-    Live demo: agents run in your browser on synthetic sample data (no LLM, no Snowflake).
-    <a href="https://github.com/sureshnarayananankumar/ai-powered-data-engineering-copilot" target="_blank" rel="noopener">View source on GitHub</a>
-  </div>
-}
-
 <main class="layout">
-  <!-- Chat -->
+  <!-- ============ AGENT RAIL ============ -->
+  <nav class="rail" aria-label="Agents">
+    <p class="rail-title">Agents</p>
+    @for (a of agents; track a.label) {
+      <button type="button" class="agent" [class.active]="mode() === a.value" (click)="pickAgent(a)" [attr.aria-pressed]="mode() === a.value">
+        <span class="agent-icon">{{ a.icon }}</span>
+        <span class="agent-text"><b>{{ a.label }}</b><small>{{ a.blurb }}</small></span>
+      </button>
+    }
+  </nav>
+
+  <!-- ============ CHAT ============ -->
   <section class="panel chat">
-    <div class="modes" role="tablist">
-      @for (m of modes; track m.label) {
-        <button type="button" role="tab" [class.active]="mode() === m.value" (click)="mode.set(m.value)">
-          {{ m.label }}
-        </button>
-      }
-    </div>
-
-    <div class="messages">
+    <div class="messages" #messages>
       @if (turns().length === 0) {
-        <div class="empty">
-          <p>Ask about SQL, dbt models, data quality, docs, or a failed Airflow task.</p>
-          @for (ex of examples; track ex) {
-            <button type="button" class="chip" (click)="send(ex)">{{ ex }}</button>
-          }
+        <div class="welcome">
+          <div class="orb" aria-hidden="true"></div>
+          <h2>What are we debugging today?</h2>
+          <p>Pick a prompt to watch the agents work, or type your own.</p>
+          <div class="prompt-grid">
+            @for (ex of examples; track ex.text; let i = $index) {
+              <button type="button" class="prompt" [style.animation-delay.ms]="i * 70" (click)="send(ex.text)">
+                <span>{{ ex.icon }}</span>{{ ex.text }}<i>→</i>
+              </button>
+            }
+          </div>
         </div>
       }
+
       @for (t of turns(); track $index) {
-        <div class="msg" [class.user]="t.role === 'user'">
-          @if (t.response) {
-            <div class="meta">
-              <span class="tag">{{ t.response.agent }}</span>
-              <span class="status" [attr.data-s]="t.response.status">{{ t.response.status }}</span>
-            </div>
-          }
-          <p class="text">{{ t.text }}</p>
-
-          @if (t.response?.sources?.length) {
-            <div class="sources">
-              Sources:
-              @for (s of t.response!.sources!; track $index) {
-                <span class="src">{{ s.source }} › {{ s.section }}</span>
+        <div class="msg" [class.user]="t.role === 'user'" [class.bot]="t.role === 'assistant'">
+          @if (t.response; as r) {
+            <ol class="trace">
+              @for (s of trace(r); track s.label; let i = $index) {
+                <li [attr.data-state]="s.state" [style.animation-delay.ms]="i * 160">
+                  <b>{{ s.label }}</b><span>{{ s.detail }}</span>
+                </li>
               }
-            </div>
+            </ol>
           }
+          <p class="text">{{ t.shown ?? t.text }}@if (t.shown !== undefined) {<i class="caret"></i>}</p>
 
-          @if (t.response?.incident; as inc) {
-            <div class="incident">
-              <div><b>DAG</b> {{ inc.dag_id }} · <b>Task</b> {{ inc.task_id }}</div>
-              <div><b>Cause</b> {{ inc.likely_cause ?? 'unknown' }} <em>({{ inc.cause_status }})</em></div>
-              <pre>{{ inc.evidence.join('\n') }}</pre>
-              <small>Retry / clear task requires human approval — not available from the Copilot.</small>
-            </div>
-          }
+          @if (t.shown === undefined) {
+            @if (t.response?.sources?.length) {
+              <div class="sources">
+                @for (s of t.response!.sources!; track $index) {
+                  <span class="src">📄 {{ s.source }} <em>› {{ s.section }}</em></span>
+                }
+              </div>
+            }
 
-          @if (t.response?.checks?.length) {
-            <div class="checks">
-              @for (c of t.response!.checks!; track c.check) {
-                <button type="button" class="chip" (click)="onSqlEdit(c.sql)">Load “{{ c.check }}” SQL</button>
-              }
-            </div>
+            @if (t.response?.incident; as inc) {
+              <div class="incident">
+                <div class="incident-head">
+                  <span class="sev">FAILED</span>
+                  <code>{{ inc.dag_id }}</code><span class="arrow">›</span><code>{{ inc.task_id }}</code>
+                </div>
+                <p><b>Likely cause:</b> {{ inc.likely_cause ?? 'unknown' }} <span class="badge">{{ inc.cause_status }}</span></p>
+                <details open>
+                  <summary>Log evidence ({{ inc.evidence.length }} lines)</summary>
+                  <pre>{{ inc.evidence.join('\n') }}</pre>
+                </details>
+                <div class="approval">
+                  <button type="button" disabled title="Requires on-call approval">⟳ Retry task</button>
+                  <button type="button" disabled title="Requires on-call approval">✕ Clear task</button>
+                  <small>🔒 Needs human approval — the Copilot never retries on its own.</small>
+                </div>
+              </div>
+            }
+
+            @if (t.response?.checks?.length) {
+              <div class="checks">
+                @for (c of t.response!.checks!; track c.check) {
+                  <button type="button" class="chip" (click)="loadCheck(c.sql)">▸ Load “{{ c.check }}” SQL</button>
+                }
+              </div>
+            }
           }
         </div>
       }
-      @if (loading()) { <div class="msg"><p class="text muted">Thinking…</p></div> }
+
+      @if (loading()) {
+        <div class="msg bot thinking"><span></span><span></span><span></span> <em>{{ activeAgent().label === 'Auto' ? 'Routing' : activeAgent().label + ' agent' }} thinking…</em></div>
+      }
     </div>
 
     @if (mode() === 'pipeline') {
@@ -92,47 +134,94 @@
     }
 
     <form class="composer" (ngSubmit)="send()">
-      <input name="message" [(ngModel)]="message" placeholder="Ask the Copilot…" autocomplete="off" />
-      <button type="submit" [disabled]="loading() || !message.trim()">Send</button>
+      <span class="composer-agent" [title]="activeAgent().blurb">{{ activeAgent().icon }} {{ activeAgent().label }}</span>
+      <input #composerInput name="message" [(ngModel)]="message" placeholder="Ask the Copilot…  (press / to focus)" autocomplete="off" />
+      <button type="submit" class="send" [disabled]="loading() || !message.trim()">Send</button>
     </form>
   </section>
 
-  <!-- SQL workbench -->
+  <!-- ============ SQL WORKBENCH ============ -->
   <section class="panel workbench">
     <div class="row">
-      <h2>SQL preview</h2>
+      <h2>SQL workbench</h2>
       @if (sqlStatus(); as s) { <span class="status" [attr.data-s]="s">{{ s }}</span> }
     </div>
-    <textarea class="sql" rows="10" spellcheck="false" [ngModel]="sql()" (ngModelChange)="onSqlEdit($event)"
-              placeholder="Generated SQL appears here. You can edit it, validate it, then run it."></textarea>
+
+    <div class="editor" [class.empty]="!sql()">
+      <div class="editor-bar">
+        <span class="dots"><i></i><i></i><i></i></span>
+        <span class="file">query.sql</span>
+        <span class="spacer"></span>
+        @if (sql()) {
+          <button type="button" class="mini" (click)="editing.set(!editing())">{{ editing() ? 'Preview' : 'Edit' }}</button>
+          <button type="button" class="mini" (click)="copySql()">{{ copied() ? 'Copied ✓' : 'Copy' }}</button>
+        }
+      </div>
+      @if (editing() || !sql()) {
+        <textarea class="sql" rows="9" spellcheck="false" [ngModel]="sql()" (ngModelChange)="onSqlEdit($event)"
+                  placeholder="-- Generated SQL appears here. Edit it, validate it, then run it."></textarea>
+      } @else {
+        <pre class="sql code" [innerHTML]="highlighted()"></pre>
+      }
+    </div>
 
     @if (latest()?.assumptions) {
-      <p class="muted"><b>Assumptions:</b> {{ latest()!.assumptions }}</p>
+      <p class="muted small"><b>Assumptions:</b> {{ latest()!.assumptions }}</p>
     }
-    @for (e of sqlErrors(); track $index) { <p class="error">{{ e }}</p> }
+
+    <ul class="guards" aria-label="SQL guardrails">
+      @for (g of guards(); track g.label) {
+        <li [attr.data-ok]="g.ok"><i></i>{{ g.label }}</li>
+      }
+    </ul>
+    @for (e of sqlErrors(); track $index) { <p class="error">⛔ {{ e }}</p> }
 
     <div class="actions">
-      <button type="button" (click)="validate()" [disabled]="!sql()">Validate</button>
+      <button type="button" class="ghost" (click)="validate()" [disabled]="!sql()">Validate</button>
       <button type="button" class="primary" (click)="run()"
               [disabled]="sqlStatus() !== 'approved' || !health()?.snowflake_configured"
-              [title]="health()?.snowflake_configured ? 'Run read-only query' : 'Configure Snowflake to enable Run'">
-        Run
-      </button>
+              [title]="health()?.snowflake_configured ? 'Run read-only query (Ctrl+Enter)' : 'Configure Snowflake to enable Run'">Run</button>
     </div>
-    <p class="muted small">Only validated, read-only SELECT statements can run. Destructive SQL is blocked on the server.</p>
+    <p class="muted small">Only validated, read-only SELECTs can run — destructive SQL is blocked server-side.</p>
 
     @if (result(); as r) {
-      <div class="table-wrap">
-        <table>
-          <thead><tr>@for (c of r.columns; track c) { <th>{{ c }}</th> }</tr></thead>
-          <tbody>
-            @for (row of r.rows; track $index) {
-              <tr>@for (c of r.columns; track c) { <td>{{ cell(row, c) }}</td> }</tr>
+      <div class="result">
+        <div class="row">
+          <span class="muted small">{{ r.rows.length }} rows · {{ r.columns.length }} columns</span>
+          <div class="seg" role="tablist">
+            <button type="button" role="tab" [class.on]="view() === 'chart'" [disabled]="!chart()" (click)="view.set('chart')">Chart</button>
+            <button type="button" role="tab" [class.on]="view() === 'table' || !chart()" (click)="view.set('table')">Table</button>
+          </div>
+        </div>
+
+        @if (view() === 'chart' && chart(); as c) {
+          <div class="chart" [attr.aria-label]="c.valueCol + ' by ' + c.labelCol">
+            <p class="chart-title">{{ c.valueCol }} by {{ c.labelCol }}</p>
+            @for (b of c.bars; track $index; let i = $index) {
+              <div class="bar-row">
+                <span class="bar-label">{{ b.label }}</span>
+                <span class="bar-track"><span class="bar" [style.width.%]="b.pct" [style.animation-delay.ms]="i * 80"></span></span>
+                <span class="bar-val">{{ fmt(b.value) }}</span>
+              </div>
             }
-          </tbody>
-        </table>
+          </div>
+        } @else {
+          <div class="table-wrap">
+            <table>
+              <thead><tr>@for (c of r.columns; track c) { <th>{{ c }}</th> }</tr></thead>
+              <tbody>
+                @for (row of r.rows; track $index) {
+                  <tr>@for (c of r.columns; track c) { <td>{{ cell(row, c) }}</td> }</tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
       </div>
-      <p class="muted small">{{ r.rows.length }} rows</p>
     }
   </section>
 </main>
+
+<footer class="foot">
+  Built by <b>Suresh Kumar N</b> · GenAI &amp; Agentic AI · Angular · FastAPI · LangGraph
+</footer>

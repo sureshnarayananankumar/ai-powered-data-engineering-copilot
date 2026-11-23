@@ -25,3 +25,12 @@ describe('demo backend', () => {
     expect(demoRun(sql.sql!).columns).toEqual(['COUNTRY', 'ORDERS', 'REVENUE']);
   });
 });
+
+import { highlightSql } from './sql-highlight';
+describe('highlightSql', () => {
+  it('wraps keywords and escapes html', () => {
+    const html = highlightSql("select '<b>' from t");
+    expect(html).toContain('<span class="t-kw">select</span>');
+    expect(html).toContain('&lt;b&gt;');
+  });
+});

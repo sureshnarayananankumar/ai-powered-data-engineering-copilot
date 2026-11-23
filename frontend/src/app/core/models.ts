@@ -24,7 +24,7 @@ export interface CopilotResponse {
   requires_approval?: string[];
 }
 
-export interface ChatTurn { role: 'user' | 'assistant'; text: string; response?: CopilotResponse; }
+export interface ChatTurn { role: 'user' | 'assistant'; text: string; response?: CopilotResponse; shown?: string; }
 
 export interface Health { status: string; llm_configured: boolean; snowflake_configured: boolean; demo?: boolean; }
 
