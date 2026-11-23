@@ -5,13 +5,21 @@
   </div>
   <div class="health">
     @if (health(); as h) {
+      @if (h.demo) { <span class="pill demo" title="Runs in your browser on synthetic sample data">Demo mode</span> }
       <span class="pill" [class.ok]="h.llm_configured">LLM {{ h.llm_configured ? 'on' : 'off' }}</span>
-      <span class="pill" [class.ok]="h.snowflake_configured">Snowflake {{ h.snowflake_configured ? 'on' : 'off' }}</span>
+      <span class="pill" [class.ok]="h.snowflake_configured">{{ h.demo ? 'Sample data' : 'Snowflake ' + (h.snowflake_configured ? 'on' : 'off') }}</span>
     } @else {
       <span class="pill bad">Backend offline</span>
     }
   </div>
 </header>
+
+@if (health()?.demo) {
+  <div class="banner">
+    Live demo: agents run in your browser on synthetic sample data (no LLM, no Snowflake).
+    <a href="https://github.com/sureshnarayananankumar/ai-powered-data-engineering-copilot" target="_blank" rel="noopener">View source on GitHub</a>
+  </div>
+}
 
 <main class="layout">
   <!-- Chat -->

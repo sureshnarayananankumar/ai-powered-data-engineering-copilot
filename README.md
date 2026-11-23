@@ -2,6 +2,10 @@
 
 An agentic GenAI assistant for data engineers. Ask in plain English and get grounded, explainable help across **Snowflake SQL**, **dbt models**, **data quality**, **documentation (RAG)** and **Airflow incident diagnosis** — with safety guardrails so nothing changes production without a human.
 
+### ▶ [Live demo](https://sureshnarayananankumar.github.io/ai-powered-data-engineering-copilot/)
+
+The live demo runs the agents in your browser on synthetic sample data (no LLM or Snowflake needed). Try the example prompts, the Pipeline tab, and SQL → Validate → Run.
+
 ![Copilot UI](docs/screenshot.png)
 
 **Stack:** Angular 19 · FastAPI · LangGraph · OpenAI · sqlglot SQL guard · Snowflake · dbt · Airflow · Docker · GitHub Actions
@@ -30,7 +34,8 @@ LangGraph router ──► SQL Agent ─────────► Snowflake (r
 | Data quality agent: generates validated read-only null & duplicate SQL | ✅ tested |
 | RAG agent: answers with source file + section, refuses when nothing relevant is found | ✅ tested |
 | Pipeline agent: extracts DAG/task, error evidence, likely cause (labelled confirmed/unknown); retries require human approval | ✅ tested on sample log |
-| Angular UI: chat, mode tabs, sources, incident card, SQL preview → Validate → Run, results table, status chips | ✅ builds, 3 unit tests |
+| Angular UI: chat, mode tabs, sources, incident card, SQL preview → Validate → Run, results table, status chips | ✅ builds, 6 unit tests |
+| Live demo on GitHub Pages (in-browser demo backend via Angular HTTP interceptor) | ✅ |
 | SQL generation with OpenAI | ⚙️ needs `OPENAI_API_KEY` |
 | Query execution in Snowflake | ⚙️ needs Snowflake credentials (Run stays disabled until configured) |
 
@@ -57,7 +62,8 @@ API docs: http://localhost:8000/docs
 cd frontend
 npm install
 npm start                        # http://localhost:4200, proxies /api to :8000
-npx ng test --watch=false        # expected: 3 SUCCESS
+npx ng test --watch=false        # expected: 6 SUCCESS
+# Demo mode locally (no backend needed): http://localhost:4200/?demo=1
 ```
 
 ### Or with Docker

@@ -27,8 +27,9 @@ export class AppComponent implements OnInit {
   readonly examples = [
     'Explain the fct_orders model',
     'Check nulls and duplicates in fct_orders',
-    'What should I do about missing object errors?',
+    'Explain what to do about missing object errors',
     'Why did the orders_daily DAG fail?',
+    'How many orders and revenue per country?',
   ];
 
   health = signal<Health | null>(null);

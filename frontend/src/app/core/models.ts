@@ -26,7 +26,7 @@ export interface CopilotResponse {
 
 export interface ChatTurn { role: 'user' | 'assistant'; text: string; response?: CopilotResponse; }
 
-export interface Health { status: string; llm_configured: boolean; snowflake_configured: boolean; }
+export interface Health { status: string; llm_configured: boolean; snowflake_configured: boolean; demo?: boolean; }
 
 export interface SqlValidation { is_valid: boolean; sql: string; errors: string[]; tables: string[]; }
 
